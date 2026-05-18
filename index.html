@@ -659,93 +659,94 @@
         // ==========================================
         // 2. 升级版：多客服随机均分 + 24小时记忆锁 + 深度事件追踪
         // ==========================================
-        document.addEventListener('DOMContentLoaded', function() {
-            // 获取全站所有的 WhatsApp 触发按钮
-            const waButtons = document.querySelectorAll('.btn-whatsapp, .btn-float');
+// ============================================================
+// FB 广告环境专用优化版：多客服分流 + 本地记忆锁 + 强力唤醒 App (终极全兼容版)
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    // 批量获取全站所有的 WhatsApp 触发按钮
+    const waButtons = document.querySelectorAll('.btn-whatsapp, .btn-premium-wa, .btn-float');
 
-            waButtons.forEach(function(button) {
-                button.addEventListener('click', function(e) {
-                    // 阻止默认空锚点跳转
-                    e.preventDefault(); 
+    waButtons.forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            // 1. 阻止默认空锚点或硬编码链接跳转，完全由 JS 接管控制流
+            e.preventDefault(); 
 
-                    // 【客服号码池配置】(已全面修正为澳大利亚国家代码 61 及 ASX 专业股民话术)
-                    const whatsappPool = [
-                        { phone: "61400000001", text: "Hi! I am interested in joining AUS Alpha Insights to receive free ASX analysis and 1-on-1 guidance." }, // 团队客服 A
-                        { phone: "61400000002", text: "Hi! I am interested in joining AUS Alpha Insights to receive free ASX analysis and 1-on-1 guidance." }, // 团队客服 B
-                        { phone: "61400000003", text: "Hi! I am interested in joining AUS Alpha Insights to receive free ASX analysis and 1-on-1 guidance." }  // 团队客服 C
-                    ];
+            // 2. 【客服号码池配置】(上线前请把号码改为真实的接粉手机号，前面不要带 + 号或 0)
+            const whatsappPool = [
+                { phone: "61400000001", text: "Hi! I am interested in joining AUS Alpha Network to receive free ASX analysis and 1-on-1 guidance." }, 
+                { phone: "61400000002", text: "Hi! I am interested in joining AUS Alpha Network to receive free ASX analysis and 1-on-1 guidance." }, 
+                { phone: "61400000003", text: "Hi! I am interested in joining AUS Alpha Network to receive free ASX analysis and 1-on-1 guidance." }  
+            ];
 
-                    // 时效配置：记忆锁定 24 小时 (单位: 毫秒)
-                    const LOCK_DURATION = 24 * 60 * 60 * 1000; 
+            // 3. 【时效配置】设置记忆锁定时间为 24 小时 (单位: 毫秒)
+            const LOCK_DURATION = 24 * 60 * 60 * 1000; 
 
-                    const now = new Date().getTime();
-                    let selectedTarget = null;
+            const now = new Date().getTime();
+            let selectedTarget = null;
 
-                    // 检查缓存状态
-                    const cachedShuntData = localStorage.getItem('wa_assigned_client');
-                    
-                    if (cachedShuntData) {
-                        try {
-                            const parsedData = JSON.parse(cachedShuntData);
-                            // 若依然处于 24 小时有效期内，则保持上次相同的接待人员
-                            if (now - parsedData.timestamp < LOCK_DURATION) {
-                                selectedTarget = parsedData.target;
-                            }
-                        } catch (err) {
-                            localStorage.removeItem('wa_assigned_client');
-                        }
+            // 4. 核心时效与记忆检查逻辑
+            const cachedShuntData = localStorage.getItem('wa_assigned_client');
+            
+            if (cachedShuntData) {
+                try {
+                    const parsedData = JSON.parse(cachedShuntData);
+                    if (now - parsedData.timestamp < LOCK_DURATION) {
+                        selectedTarget = parsedData.target;
                     }
+                } catch (err) {
+                    localStorage.removeItem('wa_assigned_client');
+                }
+            }
 
-                    // 首次进站或缓存过期，通过随机权重重新实行大盘均分
-                    if (!selectedTarget) {
-                        const randomIndex = Math.floor(Math.random() * whatsappPool.length);
-                        selectedTarget = whatsappPool[randomIndex];
-                        
-                        // 同步封包装入缓存库
-                        const cachePayload = {
-                            target: selectedTarget,
-                            timestamp: now
-                        };
-                        localStorage.setItem('wa_assigned_client', JSON.stringify(cachePayload));
-                    }
+            // 5. 首次进站或缓存过期，通过随机算法重新实行大盘均分
+            if (!selectedTarget) {
+                const randomIndex = Math.floor(Math.random() * whatsappPool.length);
+                selectedTarget = whatsappPool[randomIndex];
+                
+                const cachePayload = {
+                    target: selectedTarget,
+                    timestamp: now
+                };
+                localStorage.setItem('wa_assigned_client', JSON.stringify(cachePayload));
+            }
 
-                    const targetPhone = selectedTarget.phone;
-                    const encodedText = encodeURIComponent(selectedTarget.text);
+            const targetPhone = selectedTarget.phone;
+            const encodedText = encodeURIComponent(selectedTarget.text);
 
-                    // 精确进行底层硬件设备识别
-                    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                    
-                    let finalUrl = "";
-                    if (isMobile) {
-                        // 移动端：直接调用深层协议强行唤起 WhatsApp
-                        finalUrl = `whatsapp://send?phone=${targetPhone}&text=${encodedText}`;
-                    } else {
-                        // 桌面端：生成标准官方网关
-                        finalUrl = `https://wa.me/${targetPhone}?text=${encodedText}`;
-                    }
+            // 6. 设备环境与是否在 Facebook 内置浏览器中打开的精准识别
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const isFacebook = (userAgent.indexOf("FBAN") > -1) || (userAgent.indexOf("FBAV") > -1);
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+            
+            // 7. 针对 Facebook 广告内置浏览器的链接协议路由切换
+            let finalUrl = "";
+            if (isFacebook || isMobile) {
+                // 如果是 Facebook 内置浏览器或常规移动端：强制改用加密长链，规避沙箱吞链接
+                finalUrl = `https://api.whatsapp.com/send?phone=${targetPhone}&text=${encodedText}`;
+            } else {
+                // 仅在纯 PC 电脑端使用标准的 wa.me 链接
+                finalUrl = `https://wa.me/${targetPhone}?text=${encodedText}`;
+            }
 
-                    // 触发高级自定义 Contact 事件回传，并带入核心追踪指标
-                    if (typeof fbq === 'function') {
-                        fbq('track', 'Contact', {
-                            assigned_whatsapp: targetPhone,
-                            user_device: isMobile ? 'Mobile' : 'PC',
-                            is_cached_user: cachedShuntData ? 'Yes' : 'No'
-                        });
-                    } else {
-                        console.warn('Meta Pixel 状态异常，事件暂存浏览器日志');
-                    }
-
-                    // 强制驻留 250ms，百分百确保数据上报成功后再执行跳转，完美抵抗漏报
-                    setTimeout(function() {
-                        if (isMobile) {
-                            window.location.href = finalUrl;
-                        } else {
-                            window.open(finalUrl, '_blank');
-                        }
-                    }, 250); 
+            // 8. 触发 Meta 像素，精确回传 Contact 联系事件及深度自定义参数
+            if (typeof fbq === 'function') {
+                fbq('track', 'Contact', {
+                    assigned_whatsapp: targetPhone,
+                    user_device: isMobile ? (isFacebook ? 'Facebook_IAB' : 'Mobile_Standard') : 'PC',
+                    is_cached_user: cachedShuntData ? 'Yes' : 'No'
                 });
-            });
+            } else {
+                console.warn('Meta Pixel 状态异常，事件暂存浏览器日志');
+            }
+
+            // 9. 【核心改进点】无论 PC 还是移动端，全量强制使用 location.href 跳转
+            // 彻底消灭因 setTimeout 异步引发的 PC 端弹窗拦截风险！
+            setTimeout(function() {
+                window.location.href = finalUrl;
+            }, 250); 
         });
+    });
+});
 
         // 页面初始化就绪流
         window.onload = function() {
