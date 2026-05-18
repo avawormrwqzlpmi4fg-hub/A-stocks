@@ -506,7 +506,7 @@
             <h1>Beat Market Volatility with <span>Institutional-Grade</span> ASX Insights</h1>
             <p>Join Australia's exclusive elite private stock network. Get accurate, real-time buy/sell alerts and personalized 1-on-1 portfolio navigation directly on WhatsApp. 100% Free for Australian Investors this month.</p>
             
-            <a href="https://wa.me/61400000000?text=I%20want%20to%20join%20AUS%20Alpha%20Insights%20and%20get%20free%20ASX%20analysis" target="_blank" class="btn-whatsapp">
+            <a href="#" target="_blank" class="btn-whatsapp">
                 <i class="fa-brands fa-whatsapp"></i> Get Free 1-on-1 Advice Now
             </a>
         </div>
@@ -570,7 +570,7 @@
                 </div>
             </div>
             <div style="text-align: center; margin-top: 50px;">
-                <a href="https://wa.me/61400000000?text=I%20want%20to%20join%20AUS%20Alpha%20Insights%20and%20get%20free%20ASX%20analysis" target="_blank" class="btn-whatsapp">
+                <a href="#" target="_blank" class="btn-whatsapp">
                     <i class="fa-brands fa-whatsapp"></i> Connect via WhatsApp Free
                 </a>
             </div>
@@ -610,7 +610,7 @@
     </section>
 
     <div class="floating-cta">
-        <a href="https://wa.me/61400000000?text=I%20want%20to%20join%20AUS%20Alpha%20Insights%20and%20get%20free%20ASX%20analysis" target="_blank" class="btn-float" title="Chat on WhatsApp">
+        <a href="#" target="_blank" class="btn-float" title="Chat on WhatsApp">
             <i class="fa-brands fa-whatsapp"></i>
         </a>
     </div>
@@ -627,7 +627,9 @@
     </footer>
 
     <script type="text/javascript">
-        // 核心渲染函数：调度 TradingView 底层引擎
+        // ==========================================
+        // 1. TradingView K线图异步控制引擎
+        // ==========================================
         function initChart(symbolName) {
             new TradingView.widget({
                 "width": "100%",
@@ -636,7 +638,7 @@
                 "interval": "D",
                 "timezone": "Australia/Sydney",
                 "theme": "dark",
-                "style": "1", // "1" 固化代表标准的蜡烛 K 线图样式
+                "style": "1", 
                 "locale": "en",
                 "toolbar_bg": "#151c2c",
                 "enable_publishing": false,
@@ -647,22 +649,107 @@
             });
         }
 
-        // 切换资产标签的业务流
         function switchChart(symbolName, element) {
-            // 移出当前所有选项卡的激活高亮
             const tabs = document.querySelectorAll('.chart-tab');
             tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // 激活当前被点击的股票卡片
             element.classList.add('active');
-            
-            // 刷新并重载对应的实时 K 线数据
             initChart(symbolName);
         }
 
-        // 页面全局资源载入就绪后的首期初始化
+        // ==========================================
+        // 2. 升级版：多客服随机均分 + 24小时记忆锁 + 深度事件追踪
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取全站所有的 WhatsApp 触发按钮
+            const waButtons = document.querySelectorAll('.btn-whatsapp, .btn-float');
+
+            waButtons.forEach(function(button) {
+                button.addEventListener('click', function(e) {
+                    // 阻止默认空锚点跳转
+                    e.preventDefault(); 
+
+                    // 【客服号码池配置】(已全面修正为澳大利亚国家代码 61 及 ASX 专业股民话术)
+                    const whatsappPool = [
+                        { phone: "61400000001", text: "Hi! I am interested in joining AUS Alpha Insights to receive free ASX analysis and 1-on-1 guidance." }, // 团队客服 A
+                        { phone: "61400000002", text: "Hi! I am interested in joining AUS Alpha Insights to receive free ASX analysis and 1-on-1 guidance." }, // 团队客服 B
+                        { phone: "61400000003", text: "Hi! I am interested in joining AUS Alpha Insights to receive free ASX analysis and 1-on-1 guidance." }  // 团队客服 C
+                    ];
+
+                    // 时效配置：记忆锁定 24 小时 (单位: 毫秒)
+                    const LOCK_DURATION = 24 * 60 * 60 * 1000; 
+
+                    const now = new Date().getTime();
+                    let selectedTarget = null;
+
+                    // 检查缓存状态
+                    const cachedShuntData = localStorage.getItem('wa_assigned_client');
+                    
+                    if (cachedShuntData) {
+                        try {
+                            const parsedData = JSON.parse(cachedShuntData);
+                            // 若依然处于 24 小时有效期内，则保持上次相同的接待人员
+                            if (now - parsedData.timestamp < LOCK_DURATION) {
+                                selectedTarget = parsedData.target;
+                            }
+                        } catch (err) {
+                            localStorage.removeItem('wa_assigned_client');
+                        }
+                    }
+
+                    // 首次进站或缓存过期，通过随机权重重新实行大盘均分
+                    if (!selectedTarget) {
+                        const randomIndex = Math.floor(Math.random() * whatsappPool.length);
+                        selectedTarget = whatsappPool[randomIndex];
+                        
+                        // 同步封包装入缓存库
+                        const cachePayload = {
+                            target: selectedTarget,
+                            timestamp: now
+                        };
+                        localStorage.setItem('wa_assigned_client', JSON.stringify(cachePayload));
+                    }
+
+                    const targetPhone = selectedTarget.phone;
+                    const encodedText = encodeURIComponent(selectedTarget.text);
+
+                    // 精确进行底层硬件设备识别
+                    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                    
+                    let finalUrl = "";
+                    if (isMobile) {
+                        // 移动端：直接调用深层协议强行唤起 WhatsApp
+                        finalUrl = `whatsapp://send?phone=${targetPhone}&text=${encodedText}`;
+                    } else {
+                        // 桌面端：生成标准官方网关
+                        finalUrl = `https://wa.me/${targetPhone}?text=${encodedText}`;
+                    }
+
+                    // 触发高级自定义 Contact 事件回传，并带入核心追踪指标
+                    if (typeof fbq === 'function') {
+                        fbq('track', 'Contact', {
+                            assigned_whatsapp: targetPhone,
+                            user_device: isMobile ? 'Mobile' : 'PC',
+                            is_cached_user: cachedShuntData ? 'Yes' : 'No'
+                        });
+                    } else {
+                        console.warn('Meta Pixel 状态异常，事件暂存浏览器日志');
+                    }
+
+                    // 强制驻留 250ms，百分百确保数据上报成功后再执行跳转，完美抵抗漏报
+                    setTimeout(function() {
+                        if (isMobile) {
+                            window.location.href = finalUrl;
+                        } else {
+                            window.open(finalUrl, '_blank');
+                        }
+                    }, 250); 
+                });
+            });
+        });
+
+        // 页面初始化就绪流
         window.onload = function() {
-            initChart('ASX:XJO'); // 默认前置载入澳洲大盘标普200数据
+            initChart('ASX:XJO'); // 前置载入澳洲标普200大盘数据
         };
     </script>
 </body>
